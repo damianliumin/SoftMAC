@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<robot name="bottle">
+  <link name="world"/>
+  <joint name="bottle_to_world" type="floating">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <link name="base_link">
+    <inertial>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="3.4738725955086625"/>
+       <inertia ixx="0.046959236538620594" ixy="-9.265565265223644e-11" ixz="4.3013189002483785e-11" iyx="-9.265565265223644e-11" iyy="0.013711497963829911" iyz="1.0751899423558898e-10" izx="4.3013189002483785e-11" izy="1.0751899423558898e-10" izz="0.046959236313723875"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry> <mesh filename="bottle.obj" scale="1.0 1.0 1.0"/> </geometry>
+      <material name="white"> <color rgba="1 0.5 0.5 0.5"/> </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry> <mesh filename="bottle.obj" scale="1.0 1.0 1.0"/> </geometry>
+    </collision>
+  </link>
+</robot>

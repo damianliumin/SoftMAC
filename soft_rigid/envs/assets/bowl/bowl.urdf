@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<robot name="bowl">
+  <link name="world"/>
+  <joint name="cube_to_world" type="floating">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <link name="base_link">
+    <inertial>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="4.0083676543268085"/>
+       <inertia ixx="0.03484476909493787" ixy="6.717315378084582e-06" ixz="-3.640021981352976e-05" iyx="6.717315378084582e-06" iyy="0.051600245729595436" iyz="1.4073370860846184e-05" izx="-3.640021981352976e-05" izy="1.4073370860846184e-05" izz="0.034848576735390324"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry> <mesh filename="bowl.obj" scale="1.0 1.0 1.0"/> </geometry>
+      <material name="white"> <color rgba="0.7843137254901961 0.1411764705882353 0.17254901960784313 0.8"/> </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry> <mesh filename="bowl.obj" scale="1.0 1.0 1.0"/> </geometry>
+    </collision>
+  </link>
+</robot>

@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<robot name="floor">
+  <link name="world"/>
+
+  <joint name="floor_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="floor"/>
+    <origin xyz="0 -0.08 0" rpy="0 0 0" />
+  </joint>
+
+  <link name="floor">
+    <inertial>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="1.0"/>
+       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry> <mesh filename="floor.obj"/> </geometry>
+      <material name="white"> <color rgba="1 0.5 0.5 0.5"/> </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry> <mesh filename="floor.obj"/> </geometry>
+    </collision>
+  </link>
+</robot>
