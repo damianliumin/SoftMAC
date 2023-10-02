@@ -9,6 +9,7 @@ We provide soft-rigid and soft-cloth coupling separately. You can install them f
 (The underlying simulators for articulated rigid bodies and clothes are not open-source yet. We will update the links later.)
 
 ## Demos
+We optimize the action sequences with SoftMAC for each task.
 **Demo 1: Pour wine**
 ```bash
 # run under ./soft_rigid
