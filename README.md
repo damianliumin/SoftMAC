@@ -10,6 +10,7 @@ We provide soft-rigid and soft-cloth coupling separately. You can install them f
 
 ## Demos
 We optimize the action sequences with SoftMAC for each task.
+
 **Demo 1: Pour wine**
 ```bash
 # run under ./soft_rigid
