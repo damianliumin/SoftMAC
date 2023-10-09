@@ -43,6 +43,7 @@ def render(env, log_dir, epoch=0, action=None, n_steps=100, interval=10):
 # Preparation
 # ===============================
 def prepare(args):
+    Path("logs/").mkdir(exist_ok=True)
     log_dir = Path("logs/") / args.exp_name
     log_dir.mkdir(exist_ok=True)
     cfg = load(args.config)
