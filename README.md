@@ -6,7 +6,7 @@ Implemetation for our paper "SoftMAC: Differentiable Soft Body Simulation with F
 ## Installation
 We provide soft-rigid and soft-cloth coupling separately. You can install them following the instructions in `soft_rigid/README.md` and `soft_cloth/README.md`.
 
-(The underlying simulators for articulated rigid bodies and clothes are not open-source yet. We will update the links later.)
+(The underlying simulator for clothes simulation is not open-source yet. We will update the links later.)
 
 ## Demos
 We optimize the action sequences with SoftMAC for each task.
