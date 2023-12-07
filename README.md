@@ -1,7 +1,9 @@
 # SoftMAC
+**[Note]**: This code repository will undergo a code refactoring in December, 2023. 
+
 Implemetation for our paper "SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes" (in submission).
 
-[[project website]](https://sites.google.com/view/softmac)
+[[project website]](https://sites.google.com/view/softmac) [[paper link]](https://arxiv.org/abs/2312.03297)
 
 ## Installation
 We provide soft-rigid and soft-cloth coupling separately. You can install them following the instructions in `soft_rigid/README.md` and `soft_cloth/README.md`.
@@ -51,4 +53,12 @@ python3 demo_hit.py
 Feel free to contact me at minliu2@cs.cmu.edu or create a Github issue if you have questions regarding setting up the repository, running examples or adding new examples.
 
 ## Citation
-TBD
+If you find our work useful, please consider citing:
+```bash
+@article{liu2023softmac,
+  title={SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes},
+  author={Liu, Min and Yang, Gang and Luo, Siyuan and Yu, Chen and Shao, Lin},
+  journal={arXiv preprint arXiv:2312.03297},
+  year={2023}
+}
+```
