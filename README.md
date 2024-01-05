@@ -1,5 +1,5 @@
 # SoftMAC
-**[Note]**: This code repository will undergo a code refactoring in December, 2023. 
+**[Note]**: This code repository will undergo a code refactoring.
 
 Implemetation for our paper "SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes" (in submission).
 
