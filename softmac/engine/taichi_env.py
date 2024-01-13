@@ -14,7 +14,7 @@ from softmac.engine.losses import *
 ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=8)
 @ti.data_oriented
 class TaichiEnv:
-    def __init__(self, cfg, loss=True):
+    def __init__(self, cfg, use_loss=True):
         """
         A taichi env builds scene according the configuration and the set of manipulators
         """
@@ -32,7 +32,7 @@ class TaichiEnv:
         self.rigid_simulator = RigidSimulator(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
         self.renderer = PyRenderer(cfg.RENDERER, self.primitives)
 
-        if loss:
+        if use_loss:
             self.loss = eval(cfg.ENV.loss_type)(cfg.ENV.loss, self.simulator)
         else:
             self.loss = None

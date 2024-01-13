@@ -150,7 +150,7 @@ def main(args):
     ckpt_dir.mkdir(exist_ok=True)
 
     # Build Environment
-    env = TaichiEnv(cfg, loss=True)
+    env = TaichiEnv(cfg)
     env.set_control_mode("rigid")
     # env.initialize()
     # for i in range(10):
@@ -218,7 +218,7 @@ def main(args):
 
         loss_log.append(env.loss.loss.to_numpy())
         
-        plot_actions(log_dir, actions, actions_grad, epoch)
+        # plot_actions(log_dir, actions, actions_grad, epoch)
 
         if (epoch + 1) % args.render_interval == 0 or epoch == 0:
             render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)

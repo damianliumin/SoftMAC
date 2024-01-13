@@ -112,7 +112,7 @@ def main(args):
     ckpt_dir.mkdir(exist_ok=True)
 
     # Build Environment
-    env = TaichiEnv(cfg, loss=True)
+    env = TaichiEnv(cfg)
     env.set_control_mode("mpm")
     env.initialize()
     for i in range(10):

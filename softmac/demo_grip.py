@@ -117,7 +117,7 @@ def main(args):
     ckpt_dir.mkdir(exist_ok=True)
 
     # Build Environment
-    env = TaichiEnv(cfg, loss=True)
+    env = TaichiEnv(cfg)
     env.set_control_mode("rigid")
     env.simulator.primitives_contact = [False, True, True]
     env.initialize()
