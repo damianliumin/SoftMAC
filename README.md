@@ -1,52 +1,61 @@
 # SoftMAC
-**[Note]**: This code repository will undergo a code refactoring recently.
-
 Implemetation for our paper "SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes" (in submission).
 
-[[project website]](https://sites.google.com/view/softmac) [[paper link]](https://arxiv.org/abs/2312.03297)
+[[website]](https://sites.google.com/view/softmac) [[arXiv]](https://arxiv.org/abs/2312.03297)
 
 ## Installation
-We provide soft-rigid and soft-cloth coupling separately. You can install them following the instructions in `soft_rigid/README.md` and `soft_cloth/README.md`.
+Soft-rigid and soft-cloth coupling are implemented separately. The underlying cloth simulator DiffClothAI is not open-source yet, but we provide our code for soft-cloth coupling under `soft_cloth`. Soft-rigid coupling is already supported in this repository. Please follow the instructions:
 
-(The underlying simulator for clothes is not open-source yet. We will update the links later.)
+
+#### Step 1: Create conda environment (recommended)
+```bash
+conda create -n softmac python=3.8
+conda activate softmac
+```
+#### Step 2: Install Jade
+Jade is the underlying articulated rigid body simulator. You can find it [here](https://github.com/NUS-LinS-Lab/Jade).
+
+#### Step 3: Install SoftMAC
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
 
 ## Demos
 We optimize the action sequences with SoftMAC for each task.
 
 **Demo 1: Pour wine**
 ```bash
-# run under ./soft_rigid
 python3 demo_pour.py
 ```
-![Pour wine gif](gifs/pour_merged.gif)
+![Pour wine gif](media/pour_merged.gif)
 
 **Demo 2: Squeeze plasticine**
 ```bash
-# run under ./soft_rigid
 python3 demo_grip.py
 ```
-![Squeeze plasticine gif](gifs/grip_merged.gif)
+![Squeeze plasticine gif](media/grip_merged.gif)
 
 **Demo 3: Pull door**
 ```bash
-# run under ./soft_rigid
 python3 demo_door.py
 ```
-![Pull door gif](gifs/door_merged.gif)
+![Pull door gif](media/door_merged.gif)
 
 **Demo 4: Make taco**
 ```bash
 # run under ./soft_cloth
 python3 demo_taco.py
 ```
-![Make taco gif](gifs/taco_merged.gif)
+![Make taco gif](media/taco_merged.gif)
 
 **Demo 5: Push towel**
 ```bash
 # run under ./soft_cloth
 python3 demo_hit.py
 ```
-![Make taco gif](gifs/hit_saved_merged.gif)
+![Make taco gif](media/hit_saved_merged.gif)
 
 
 ## Note
