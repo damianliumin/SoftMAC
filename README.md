@@ -12,10 +12,10 @@ Soft-rigid and soft-cloth coupling are implemented separately. The underlying cl
 conda env create -n softmac python=3.8
 conda activate softmac
 ```
-#### Step 1: Install Jade
+#### Step 2: Install Jade
 Jade is the underlying articulated rigid body simulator. You can find it [here](https://github.com/NUS-LinS-Lab/Jade).
 
-#### Step 2: Install SoftMAC
+#### Step 3: Install SoftMAC
 
 ```bash
 pip install -r requirements.txt

@@ -152,10 +152,10 @@ def main(args):
     # Build Environment
     env = TaichiEnv(cfg, loss=True)
     env.set_control_mode("rigid")
-    env.initialize()
-    for i in range(10):
-        # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
-        env.forward()
+    # env.initialize()
+    # for i in range(10):
+    #     # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
+    #     env.forward()
     env.initialize()
     env.rigid_simulator.set_transform_action(True)
 
