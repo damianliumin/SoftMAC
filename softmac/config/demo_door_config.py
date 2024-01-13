@@ -68,7 +68,7 @@ RIGID.init_state = (
 
 Door = CN()
 Door.friction = 0.001  
-Door.urdf_path = "envs/assets/door/door.urdf"
+Door.urdf_path = "assets/door/door.urdf"
 Door.enable_external_force = True
 
 _C.PRIMITIVES = [ Door, ]

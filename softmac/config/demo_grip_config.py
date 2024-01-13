@@ -50,7 +50,7 @@ RIGID.init_state = (
 
 Gripper = CN()
 Gripper.friction = 0.001
-Gripper.urdf_path = "envs/assets/gripper/gripper.urdf"
+Gripper.urdf_path = "assets/gripper/gripper.urdf"
 Gripper.enable_external_force = True
 
 _C.PRIMITIVES = [ Gripper, ]

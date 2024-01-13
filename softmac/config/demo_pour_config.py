@@ -57,12 +57,12 @@ RIGID.init_state = (
 
 Bowl = CN()
 Bowl.friction = 1.0  
-Bowl.urdf_path = "envs/assets/bowl/bowl.urdf"
+Bowl.urdf_path = "assets/bowl/bowl.urdf"
 Bowl.enable_external_force = False
 
 Glass = CN()
 Glass.friction = 0.1
-Glass.urdf_path = "envs/assets/glass/glass.urdf"
+Glass.urdf_path = "assets/glass/glass.urdf"
 Glass.enable_external_force = True
 
 _C.PRIMITIVES = [Glass, Bowl]

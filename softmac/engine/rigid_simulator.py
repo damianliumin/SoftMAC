@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import nimblephysics as nimble
 from pathlib import Path
+import os
 
 class RigidSimulator:
     def __init__(self, cfg, primitives, substeps=20, env_dt=2e-3):
@@ -78,7 +79,7 @@ class RigidSimulator:
         return skeleton
 
     def add_floor(self):
-        floor = self.world.loadSkeleton(str(Path("envs/assets/floor/floor.urdf").absolute()))
+        floor = self.world.loadSkeleton(str(Path("assets/floor/floor.urdf").absolute()))
         floor_node = floor.getBodyNode(0)
         floor_node.setFrictionCoeff(1e3)
         return floor
