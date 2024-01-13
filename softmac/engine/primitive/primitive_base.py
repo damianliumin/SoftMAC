@@ -1,18 +1,8 @@
 import taichi as ti
 import numpy as np
 from softmac.engine.primitive.primitive_utils import length, qrot, inv_trans
+from softmac.config.utils import make_cls_config
 from yacs.config import CfgNode as CN
-
-def make_cls_config(self, cfg=None, **kwargs):
-    _cfg = self.default_config()
-    if cfg is not None:
-        if isinstance(cfg, str):
-            _cfg.merge_from_file(cfg)
-        else:
-            _cfg.merge_from_other_cfg(cfg)
-    if len(kwargs) > 0:
-        _cfg.merge_from_list(sum(list(kwargs.items()), ()))
-    return _cfg
 
 @ti.data_oriented
 class Primitive:

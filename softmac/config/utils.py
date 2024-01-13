@@ -12,7 +12,6 @@ def make_cls_config(self, cfg=None, **kwargs):
         _cfg.merge_from_list(sum(list(kwargs.items()), ()))
     return _cfg
 
-
 def purge_cfg(cfg: CfgNode):
     """Purge configuration for clean logs and logical check.
     Notes:
