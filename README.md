@@ -18,35 +18,35 @@ We optimize the action sequences with SoftMAC for each task.
 # run under ./soft_rigid
 python3 demo_pour.py
 ```
-![Pour wine gif](gifs/pour_merged.gif)
+![Pour wine gif](media/pour_merged.gif)
 
 **Demo 2: Squeeze plasticine**
 ```bash
 # run under ./soft_rigid
 python3 demo_grip.py
 ```
-![Squeeze plasticine gif](gifs/grip_merged.gif)
+![Squeeze plasticine gif](media/grip_merged.gif)
 
 **Demo 3: Pull door**
 ```bash
 # run under ./soft_rigid
 python3 demo_door.py
 ```
-![Pull door gif](gifs/door_merged.gif)
+![Pull door gif](media/door_merged.gif)
 
 **Demo 4: Make taco**
 ```bash
 # run under ./soft_cloth
 python3 demo_taco.py
 ```
-![Make taco gif](gifs/taco_merged.gif)
+![Make taco gif](media/taco_merged.gif)
 
 **Demo 5: Push towel**
 ```bash
 # run under ./soft_cloth
 python3 demo_hit.py
 ```
-![Make taco gif](gifs/hit_saved_merged.gif)
+![Make taco gif](media/hit_saved_merged.gif)
 
 
 ## Note
