@@ -119,7 +119,7 @@ def main(args):
         # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
         env.forward()
     env.initialize()
-    env.rigid_simulator.ext_grad_scale = 1 / 40.        # it works, but don't know why...
+    env.rigid_simulator.ext_grad_scale = 1 / 40.        # TODO: mpm2rigid suffers from gradient explosion. Is there a numerical issue?
 
     # Prepare Controller
     control_idx = -torch.ones(env.simulator.n_particles)    # -1 for uncontrolled particles

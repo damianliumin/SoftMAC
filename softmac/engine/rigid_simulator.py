@@ -148,7 +148,7 @@ class RigidSimulator:
             return []
 
         ext_grad = self.get_ext_state_grad(s+1)
-        self.state_grad += ext_grad * self.ext_grad_scale           # mpm2rigid suffers from gradient explosion, don't know why...
+        self.state_grad += ext_grad * self.ext_grad_scale           # TODO: mpm2rigid suffers from gradient explosion
 
         # s[t+1] -> action
         action_grad = (self.state_grad @ self.jacob_ds_da[s]).float()
