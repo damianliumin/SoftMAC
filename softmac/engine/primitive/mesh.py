@@ -6,8 +6,8 @@ import time
 import os
 import pickle
 from pathlib import Path
-from .primitive_base import Primitive
-from .utils import inv_trans, ray_aabb_intersection
+from softmac.engine.primitive.primitive_base import Primitive
+from softmac.engine.primitive.primitive_utils import inv_trans, ray_aabb_intersection
 
 inf = 1e10
 

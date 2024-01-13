@@ -1,6 +1,5 @@
 import time
 from argparse import ArgumentParser
-from pathlib import Path
 
 import taichi as ti
 import numpy as np
@@ -9,8 +8,8 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
-from engine.taichi_env import TaichiEnv
-from utils import make_movie, render, prepare
+from softmac.engine.taichi_env import TaichiEnv
+from softmac.utils import make_movie, render, prepare
 
 np.set_printoptions(precision=4)
 

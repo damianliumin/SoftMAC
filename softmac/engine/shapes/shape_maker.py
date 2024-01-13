@@ -1,5 +1,4 @@
 import numpy as np
-import copy
 
 COLORS = [
     (127 << 16) + 127,

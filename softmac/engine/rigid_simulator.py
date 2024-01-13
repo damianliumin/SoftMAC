@@ -1,7 +1,5 @@
 import torch
-from torch.autograd.functional import jacobian
 import numpy as np
-from scipy.spatial.transform import Rotation
 import nimblephysics as nimble
 from pathlib import Path
 

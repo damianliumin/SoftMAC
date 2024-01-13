@@ -1,7 +1,6 @@
 import numpy as np
 import trimesh
 import pyrender
-import cv2
 import os
 os.environ['PYOPENGL_PLATFORM'] = 'egl'
 

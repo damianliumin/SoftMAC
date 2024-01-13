@@ -1,19 +1,17 @@
 import numpy as np
-import cv2
 import taichi as ti
 import torch
 import time
 
-from .mpm_simulator import MPMSimulator
-from .rigid_simulator import RigidSimulator
-from .primitive import Primitives
-from .renderer import PyRenderer
-from .shapes import Shapes
-from .losses import *
+from softmac.engine.mpm_simulator import MPMSimulator
+from softmac.engine.rigid_simulator import RigidSimulator
+from softmac.engine.primitive import Primitives
+from softmac.engine.renderer import PyRenderer
+from softmac.engine.shapes import Shapes
+from softmac.engine.losses import *
 
-# TODO: run on GPU, fast_math will cause error on float64's sqrt; removing it cuases compile error..
-ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=12, device_memory_fraction=0.9)
-
+# ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=12, device_memory_fraction=0.9)
+ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=8)
 @ti.data_oriented
 class TaichiEnv:
     def __init__(self, cfg, loss=True):

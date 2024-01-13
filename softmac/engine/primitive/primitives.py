@@ -1,13 +1,10 @@
 import taichi as ti
 import numpy as np
-import yaml
 import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from .primitive_base import Primitive
+from softmac.engine.primitive.mesh import Mesh
 from yacs.config import CfgNode as CN
-from .utils import qrot, qmul, w2quat
-from .mesh import Mesh
 
 inf = 1e10
 

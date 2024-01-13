@@ -1,8 +1,7 @@
 import taichi as ti
 import numpy as np
-from .utils import length, qrot, qmul, w2quat
+from softmac.engine.primitive.primitive_utils import length, qrot, inv_trans
 from yacs.config import CfgNode as CN
-from .utils import inv_trans, qrot
 
 def make_cls_config(self, cfg=None, **kwargs):
     _cfg = self.default_config()
