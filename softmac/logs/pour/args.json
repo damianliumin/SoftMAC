@@ -1,7 +1,0 @@
-{
-    "exp_name": "pour",
-    "config": "config/demo_pour_config.py",
-    "render_interval": 5,
-    "epochs": 40,
-    "steps": 3000
-}

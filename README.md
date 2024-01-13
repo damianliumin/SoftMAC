@@ -9,7 +9,7 @@ Soft-rigid and soft-cloth coupling are implemented separately. The underlying cl
 
 #### Step 1: Create conda environment (recommended)
 ```bash
-conda env create -n softmac python=3.8
+conda create -n softmac python=3.8
 conda activate softmac
 ```
 #### Step 2: Install Jade
