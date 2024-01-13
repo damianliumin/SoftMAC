@@ -7,3 +7,4 @@ scipy==1.10.1
 trimesh==3.21.5
 rtree==1.0.1
 pyrender==0.1.45
+matplotlib
