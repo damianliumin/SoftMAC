@@ -259,9 +259,11 @@ class Primitive:
         return x
 
     def initialize(self):
-        cfg = self.cfg
-        self.clear_all_states()
         self.friction[None] = self.cfg.friction # friction coefficient
+        self.reset()
+
+    def reset(self):
+        self.clear_all_states()
         self.clear_ext_f()
 
     @classmethod

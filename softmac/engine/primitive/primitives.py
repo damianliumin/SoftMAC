@@ -53,6 +53,8 @@ class Primitives:
         return len(self.primitives)
 
     def initialize(self):
-        for i in self.primitives:
-            i.initialize()
         self.set_softness(666.)
+
+    def reset(self):
+        for i in self.primitives:
+            i.reset()

@@ -64,11 +64,11 @@ class Controller:
         self.epoch += 1
 
 def gen_init_state(args, env, log_dir, actions):
-    env.initialize()
+    env.reset()
     env.set_copy(False)
     for step in range(args.steps):
         action = actions[step]
-        env.forward(action)
+        env.step(action)
     render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
     make_movie(log_dir)
 
@@ -110,6 +110,24 @@ def plot_actions(log_dir, actions, actions_grad, epoch):
 
     torch.save(actions, log_dir / "ckpt" / f"actions_{epoch}.pt")
 
+def plot_loss_curve(log_dir, loss_log):
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fontsize = 14
+    plt.plot(loss_log, color="#c11221")
+    plt.xlabel("Epochs", fontsize=fontsize)
+    plt.xticks([0, 2, 4, 6, 8, 10, 12, 14])
+    formatter = ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-1, 1))
+    ax.yaxis.set_major_formatter(formatter)
+    plt.ylabel("Loss", fontsize=fontsize)
+    plt.tight_layout()
+    plt.savefig(log_dir / "loss_curve.png", dpi=500)
+    plt.close()
+
+    losses = np.array(loss_log)
+    np.save(log_dir / "losses.npy", losses)
+
 def main(args):
     # Path and Configurations
     log_dir, cfg = prepare(args)
@@ -118,13 +136,11 @@ def main(args):
 
     # Build Environment
     env = TaichiEnv(cfg)
-    env.set_control_mode("rigid")
     env.simulator.primitives_contact = [False, True, True]
-    env.initialize()
-    for i in range(10):
-        # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
-        env.forward()
-    env.initialize()
+    # for i in range(10):
+    #     # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
+    #     env.step()
+    # env.reset()
 
     # Prepare Controller
     actions = get_init_actions(args, env, choice=2)
@@ -139,14 +155,14 @@ def main(args):
         # preparation
         tik = time.time()
         ti.ad.clear_all_gradients()
-        env.initialize()
+        env.reset()
         prepare_time = time.time() - tik
 
         # forward
         tik = time.time()
         actions = controller.get_actions()
         for i in range(args.steps):
-            env.forward(actions[i])
+            env.step(actions[i])
         forward_time = time.time() - tik
 
         # loss
@@ -187,22 +203,7 @@ def main(args):
             render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
             make_movie(log_dir, f"epoch{epoch}")
 
-    fig, ax = plt.subplots(figsize=(4, 3))
-    fontsize = 14
-    plt.plot(loss_log, color="#c11221")
-    plt.xlabel("Epochs", fontsize=fontsize)
-    plt.xticks([0, 2, 4, 6, 8, 10, 12, 14])
-    formatter = ScalarFormatter(useMathText=True)
-    formatter.set_scientific(True)
-    formatter.set_powerlimits((-1, 1))
-    ax.yaxis.set_major_formatter(formatter)
-    plt.ylabel("Loss", fontsize=fontsize)
-    plt.tight_layout()
-    plt.savefig(log_dir / "loss_curve.png", dpi=500)
-    plt.close()
-
-    losses = np.array(loss_log)
-    np.save(log_dir / "losses.npy", losses)
+    plot_loss_curve(log_dir, loss_log)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,6 @@ class RigidSimulator:
         self.cfg = cfg
         self.primitives = primitives
         self.n_primitive = len(self.primitives)
-        self.cur = 0
         self.substeps = substeps
         self.max_steps = max_steps = 2048 // substeps
         self.gravity = cfg.gravity
@@ -357,7 +356,9 @@ class RigidSimulator:
 
     # ================ initialization ===================
     def initialize(self):
-        self.cur = 0
+        pass
+
+    def reset(self):
         state = self.init_state.clone()
         self.world.setState(state)
         self.states = [state, ]
@@ -368,4 +369,3 @@ class RigidSimulator:
         self.jacob_action = []
         self.set_ext_state(-1)
         self.state_grad = torch.zeros(self.state_dim)
-

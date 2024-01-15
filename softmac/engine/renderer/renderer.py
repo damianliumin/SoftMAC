@@ -164,3 +164,6 @@ class PyRenderer:
         
     def initialize(self):
         pass
+
+    def reset(self):
+        pass

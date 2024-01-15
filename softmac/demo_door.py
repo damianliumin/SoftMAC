@@ -98,6 +98,24 @@ def plot_actions(log_dir, actions, actions_grad, epoch):
 
     torch.save(actions, log_dir / "ckpt" / f"actions_{epoch}.pt")
 
+def plot_loss_curve(log_dir, loss_log):
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fontsize = 14
+    plt.plot(loss_log, color="#c11221")
+    plt.xlabel("Epochs", fontsize=fontsize)
+    plt.xticks([0, 2, 4, 6, 8, 10, 12, 14])
+    formatter = ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-1, 1))
+    ax.yaxis.set_major_formatter(formatter)
+    plt.ylabel("Loss", fontsize=fontsize)
+    plt.tight_layout()
+    plt.savefig(log_dir / "loss_curve.png", dpi=500)
+    plt.close()
+
+    losses = np.array(loss_log)
+    np.save(log_dir / "losses.npy", losses)
+
 # Add the following to "engine/renderer/renderer.py: def set_primitives(self, f)" for btter visualization
 # mesh.visual.face_colors = np.array([
 #     [0.6, 0.6, 0.68, 1.0] for i in range(12)
@@ -113,17 +131,15 @@ def main(args):
 
     # Build Environment
     env = TaichiEnv(cfg)
-    env.set_control_mode("mpm")
-    env.initialize()
-    for i in range(10):
-        # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
-        env.forward()
-    env.initialize()
-    env.rigid_simulator.ext_grad_scale = 1 / 40.        # TODO: mpm2rigid suffers from gradient explosion. Is there a numerical issue?
+    # for i in range(10):
+    #     # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
+    #     env.step()
+    # env.resets()
+    env.rigid_simulator.ext_grad_scale = 1 / 40.            # TODO: mpm2rigid suffers from gradient explosion. Is there a numerical issue?
 
     # Prepare Controller
     control_idx = -torch.ones(env.simulator.n_particles)    # -1 for uncontrolled particles
-    control_idx[:] = 0                                  # controller id starts from 0
+    control_idx[:] = 0                                      # controller id starts from 0
     env.simulator.set_control_idx(control_idx)
 
     actions = get_init_actions(args, env, choice=1)
@@ -138,14 +154,14 @@ def main(args):
         # preparation
         tik = time.time()
         ti.ad.clear_all_gradients()
-        env.initialize()
+        env.reset()
         prepare_time = time.time() - tik
 
         # forward
         tik = time.time()
         actions = controller.get_actions()
         for i in range(args.steps):
-            env.forward(actions[i])
+            env.step(actions[i])
         forward_time = time.time() - tik
 
         # loss
@@ -183,24 +199,7 @@ def main(args):
             render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
             make_movie(log_dir, f"epoch{epoch}")
 
-
-    # save loss curve
-    fig, ax = plt.subplots(figsize=(4, 3))
-    fontsize = 14
-    plt.plot(loss_log, color="#c11221")
-    plt.xlabel("Epochs", fontsize=fontsize)
-    plt.xticks([0, 2, 4, 6, 8, 10, 12, 14])
-    formatter = ScalarFormatter(useMathText=True)
-    formatter.set_scientific(True)
-    formatter.set_powerlimits((-1, 1))
-    ax.yaxis.set_major_formatter(formatter)
-    plt.ylabel("Loss", fontsize=fontsize)
-    plt.tight_layout()
-    plt.savefig(log_dir / "loss_curve.png", dpi=500)
-    plt.close()
-
-    losses = np.array(loss_log)
-    np.save(log_dir / "losses.npy", losses)
+    plot_loss_curve(log_dir, loss_log)
 
 
 if __name__ == "__main__":

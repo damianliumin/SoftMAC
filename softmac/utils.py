@@ -1,9 +1,11 @@
 import cv2
 import os
-import numpy as np 
 from pathlib import Path
 from config import load
 import json
+
+import numpy as np 
+import torch
 
 # ===============================
 # Rendering
@@ -61,3 +63,52 @@ def prepare(args):
         os.system(f"rm -r {str(action_dir)}")
     action_dir.mkdir(exist_ok=True)
     return log_dir, cfg
+
+# ===============================
+# Initial States
+# ===============================
+def adjust_action_with_ext_force(env, actions):
+    """ 
+    The actions are obtained from optimization without external force.
+    Use this function to adjust actions with external force.
+    """
+    assert env.control_mode == "rigid"
+    assert env._is_copy == False
+
+    def qrot(rot, v):
+        # rot: vec4, v: vec3
+        qvec = rot[1:]
+        uv = qvec.cross(v)
+        uuv = qvec.cross(uv)
+        return v + 2 * (rot[0] * uv + uuv)
+
+    def transform_force(exp, force, torque):
+        q = env.rigid_simulator.exp2quat(exp)
+        q[1:] *= -1.
+        force_local = qrot(q, force)
+        torque_local = qrot(q, torque)
+        return force_local, torque_local
+
+    num_steps = actions.shape[0]
+
+    action_rec = []
+    for t in range(num_steps):
+        start = env.simulator.cur
+        env.simulator.cur = start + env.substeps
+        for s in range(start, env.simulator.cur):
+            env.simulator.substep(s)
+
+        for i in range(env.rigid_simulator.n_primitive):
+            ext_f = torch.FloatTensor(env.primitives[i].ext_f.to_numpy()) / env.substeps
+            if env.primitives[i].enable_external_force:
+                force, torque = ext_f[:3], ext_f[3:]
+                force += env.rigid_simulator.skeletons[i].getMass() * torch.Tensor(env.rigid_simulator.gravity)
+
+                actions[t, i * 6 : i * 6 + 3] -= torque
+                actions[t, i * 6 + 3 : i * 6 + 6] -= force
+
+        env.rigid_simulator.step(start // env.substeps, actions[t])
+        action_rec.append(actions[t])
+
+    return torch.vstack(action_rec)
+

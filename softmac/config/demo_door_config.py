@@ -5,7 +5,7 @@ import math
 _C = CN()
 
 cfg = _C
-_C.control_mode="rigid"
+_C.control_mode="mpm"
 _C.env_dt = 1e-3
 gravity = (0., -9.8, 0.)
 
