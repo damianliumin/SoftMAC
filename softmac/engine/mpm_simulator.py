@@ -334,7 +334,8 @@ class MPMSimulator:
         if action is not None:
             self.set_action(action)
         for i in range(self.n_primitive):
-            if ext_f_grad is not None: self.primitives[i].set_ext_f_grad(ext_f_grad[i])
+            if ext_f_grad is not None: 
+                self.primitives[i].set_ext_f_grad(ext_f_grad[i])
 
         # clear
         self.clear_grid()

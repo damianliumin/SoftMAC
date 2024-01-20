@@ -14,13 +14,20 @@ from softmac.engine.losses import *
 ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=8)
 @ti.data_oriented
 class TaichiEnv:
-    def __init__(self, cfg, use_loss=True):
+    def __init__(self, cfg):
         """
         A taichi env builds scene according the configuration and the set of manipulators
         """
         self.cfg = cfg.ENV
-        cfg.SIMULATOR.defrost()
+        cfg.defrost()
         self.env_dt = cfg.env_dt
+
+        # set control mode
+        self.control_mode = cfg.control_mode    # "mpm", "rigid"
+        assert self.control_mode in ("mpm", "rigid")
+        # If `rigid_velocity_control` is True, rigid bodies are controlled by velocity and Jade is not used.
+        # Otherwise, they are controlled by force and simulated with Jade.
+        self.rigid_velocity_control = cfg.rigid_velocity_control        # default: False
 
         # set primitives and shapes
         self.primitives = Primitives(cfg.PRIMITIVES, max_timesteps=cfg.SIMULATOR.max_steps)
@@ -35,7 +42,8 @@ class TaichiEnv:
         self.renderer = PyRenderer(cfg.RENDERER, self.primitives)
 
         # set loss if applicable
-        if use_loss:
+        self.use_loss = cfg.ENV.loss_type != ""
+        if self.use_loss:
             self.loss = eval(cfg.ENV.loss_type)(cfg.ENV.loss, self.simulator)
         else:
             self.loss = None
@@ -43,10 +51,6 @@ class TaichiEnv:
         # When `_is_copy` is True, old states are overwritten by new states.
         # Recommend setting `_is_copy` to True when gradients are not needed.
         self._is_copy = False
-
-        # Set control mode
-        self.control_mode = cfg.control_mode    # "mpm", "rigid"
-        assert self.control_mode in ("mpm", "rigid")
 
         self.initialize()
 

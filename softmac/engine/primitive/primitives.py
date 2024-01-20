@@ -13,7 +13,7 @@ def length(x):
     return ti.sqrt(x.dot(x) + 1e-14)
 
 class Primitives:
-    def __init__(self, cfgs, max_timesteps=2048):
+    def __init__(self, cfgs, max_timesteps=2048, rigid_velocity_control=False):
         self.primitives = []
         self.urdfs = []
         for i in cfgs:

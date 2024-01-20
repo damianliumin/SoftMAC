@@ -2,7 +2,6 @@ import torch
 import numpy as np
 import nimblephysics as nimble
 from pathlib import Path
-import os
 
 class RigidSimulator:
     def __init__(self, cfg, primitives, substeps=20, env_dt=2e-3):

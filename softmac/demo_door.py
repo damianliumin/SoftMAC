@@ -76,28 +76,6 @@ def get_init_actions(args, env, choice=0):
         assert False
     return torch.FloatTensor(actions)
 
-def plot_actions(log_dir, actions, actions_grad, epoch):
-    actions = actions.detach().numpy()
-    plt.figure()
-
-    plt.subplot(211)
-    plt.title("Actor 1")
-    for i, axis in zip(range(3), ['x', 'y', 'z']):
-        plt.plot(actions[:, i], label=axis)
-    plt.legend(loc='upper right')
-
-    plt.subplot(212)
-    plt.title("Grad for Actor 1")
-    for i, axis in zip(range(3), ['x', 'y', 'z']):
-        plt.plot(actions_grad[:, i], label=axis)
-    plt.legend(loc='upper right')
-
-    plt.tight_layout()
-    plt.savefig(log_dir / "actions" / f"actions_{epoch}.png", dpi=300)
-    plt.close()
-
-    torch.save(actions, log_dir / "ckpt" / f"actions_{epoch}.pt")
-
 def plot_loss_curve(log_dir, loss_log):
     fig, ax = plt.subplots(figsize=(4, 3))
     fontsize = 14
@@ -192,8 +170,6 @@ def main(args):
         print("Loss: {:.4f} pose: {:.4f} vel: {:.4f} contact: {:.4f}".format(loss, pose_loss, vel_loss, contact_loss))
 
         loss_log.append(env.loss.loss.to_numpy())
-        
-        plot_actions(log_dir, actions, actions_grad, epoch)
 
         if (epoch + 1) % args.render_interval == 0 or epoch == 0:
             render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
