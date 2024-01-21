@@ -117,10 +117,10 @@ class Primitive:
             normal_component = input_v.dot(D)
             p_v_t = input_v - normal_component * D
             
-            k1 = 10.0
+            k1 = 50.0
             f1 = - D * c * k1
 
-            kf = self.friction[None] * 0.2
+            kf = self.friction[None]
             p_v_t_norm = ti.sqrt(p_v_t.dot(p_v_t) + 1e-8)
             # f2 = - p_v_t * kf
             f2 = - p_v_t / p_v_t_norm * ti.abs(normal_component) * kf
@@ -162,7 +162,7 @@ class Primitive:
                     influence = ti.min(ti.exp(-dist * self.softness[None]), 1)
                     p_v = collider_v + input_v * (1 - influence) + p_v_t * influence
 
-            # move penetrated particles to surface, very important!
+            # move penetrated particles to surface
             x_new = p_v * dt + p_pos
             sdf = self.sdf(f, x_new)
             if sdf < 0:

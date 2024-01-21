@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
 from softmac.engine.taichi_env import TaichiEnv
-from softmac.utils import make_movie, render, prepare
+from softmac.utils import make_gif_from_numpy, render, prepare
 
 np.set_printoptions(precision=4)
 
@@ -172,8 +172,8 @@ def main(args):
         loss_log.append(env.loss.loss.to_numpy())
 
         if (epoch + 1) % args.render_interval == 0 or epoch == 0:
-            render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
-            make_movie(log_dir, f"epoch{epoch}")
+            images = render(env, n_steps=args.steps, interval=args.steps // 50)
+            make_gif_from_numpy(images, log_dir, f"epoch{epoch}")
 
     plot_loss_curve(log_dir, loss_log)
 

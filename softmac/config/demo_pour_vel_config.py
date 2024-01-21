@@ -27,7 +27,7 @@ _C.SIMULATOR.ptype = 2  # 0: plastic 1: elastic 2: liquid
 _C.SIMULATOR.material_model = 0 # 0: Fixed Corotated 1: Neo-Hookean
 _C.SIMULATOR.n_controllers = 0
 _C.SIMULATOR.dt = 1e-3
-_C.SIMULATOR.collision_type = 2 # 0: grid 1: particle 2: mixed
+_C.SIMULATOR.collision_type = 1 # 0: grid 1: particle 2: mixed
 
 
 _C.SHAPES = [
@@ -56,12 +56,12 @@ RIGID.init_state = (
 )
 
 Bowl = CN()
-Bowl.friction = 1.0  
+Bowl.friction = 100.0  
 Bowl.urdf_path = "assets/bowl/bowl.urdf"
 Bowl.enable_external_force = False
 
 Glass = CN()
-Glass.friction = 0.1
+Glass.friction = 10.0
 Glass.urdf_path = "assets/glass/glass.urdf"
 Glass.enable_external_force = True
 

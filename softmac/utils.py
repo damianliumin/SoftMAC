@@ -1,16 +1,14 @@
-import cv2
 import os
 from pathlib import Path
 from config import load
 import json
 
-import numpy as np 
 import torch
 
 # ===============================
 # Rendering
 # ===============================
-def make_movie(log_dir, name=None):
+def make_gif_from_files(log_dir, name=None):
     import imageio.v2 as imageio
     filenames = os.listdir(log_dir / "figs")
     filenames.sort()
@@ -28,10 +26,9 @@ def make_gif_from_numpy(images, logdir, name=None):
         for image in images:
             writer.append_data(image)
 
-def render(env, log_dir, epoch=0, action=None, n_steps=100, interval=10):
+def render(env, action=None, n_steps=100, interval=10):
     print("Rendering...")
-    fig_dir = log_dir / "figs"
-    fig_dir.mkdir(exist_ok=True)
+    image_list = []
     if action is not None:
         env.initialize()
         is_copy = env._is_copy
@@ -42,10 +39,12 @@ def render(env, log_dir, epoch=0, action=None, n_steps=100, interval=10):
         if i % interval == 0:
             frame = i * env.substeps if action is None else 0
             img = env.render(frame)
-            img = img[:, :, ::-1]
-            cv2.imwrite(str(fig_dir / f"{epoch:02d}-{i:05d}.png"), img)
+            # img = img[:, :, ::-1]
+            image_list.append(img)
     if action is not None:
         env.set_copy(is_copy)
+
+    return image_list
 
 
 # ===============================

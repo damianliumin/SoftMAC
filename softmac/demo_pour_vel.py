@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
 from softmac.engine.taichi_env import TaichiEnv
-from softmac.utils import make_movie, make_gif_from_numpy, render, prepare, adjust_action_with_ext_force
+from softmac.utils import make_gif_from_numpy, render, prepare, adjust_action_with_ext_force
 
 np.set_printoptions(precision=4)
 
@@ -21,7 +21,7 @@ class Controller:
         self.action = torch.zeros(num_actions, 12, requires_grad=True)
 
         self.action_scale = torch.FloatTensor(
-            [0., 0., 4., 1., 1., 0., 0., 0., 0., 0., 0., 0.]
+            [0., 0., 10., 0.5, 0.5, 0., 0., 0., 0., 0., 0., 0.]
         )
 
         # optimizer
@@ -60,23 +60,6 @@ class Controller:
         self.optimizer.step()
 
         self.epoch += 1
-    
-def plot_loss_curve(log_dir, loss_log):
-    fig, ax = plt.subplots(figsize=(4, 3))
-    fontsize = 14
-    plt.plot(loss_log, color="#c11221")
-    plt.xlabel("Epochs", fontsize=fontsize)
-    formatter = ScalarFormatter(useMathText=True)
-    formatter.set_scientific(True)
-    formatter.set_powerlimits((-1, 1))
-    ax.yaxis.set_major_formatter(formatter)
-    plt.ylabel("Loss", fontsize=fontsize)
-    plt.tight_layout()
-    plt.savefig(log_dir / "loss_curve.png", dpi=500)
-    plt.close()
-
-    losses = np.array(loss_log)
-    np.save(log_dir / "losses.npy", losses)
 
 def main(args):
     # Path and Configurations
@@ -87,20 +70,8 @@ def main(args):
     # Build Environment
     env = TaichiEnv(cfg)
 
-    # images = [env.render()]
-    # for s in range(args.steps):
-    #     action = torch.zeros(12)
-    #     # action[4] = 0.2
-    #     action[2] = np.pi / 4
-    #     env.step(action)
-    #     if s % 20 == 0:
-    #         img = env.render()
-    #         images.append(img)
-    # make_gif_from_numpy(images, log_dir)
-    # return
-
     # Prepare Controller
-    controller = Controller(num_actions=100, steps=args.steps, lr=1e-2)
+    controller = Controller(num_actions=100, steps=args.steps, lr=3e-2)
 
     loss_log = []
     print("Optimizing Trajectory...")
@@ -149,10 +120,8 @@ def main(args):
         loss_log.append(env.loss.loss.to_numpy())
         
         if (epoch + 1) % args.render_interval == 0 or epoch == 0:
-            render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
-            make_movie(log_dir, f"epoch{epoch}")
-
-    plot_loss_curve(log_dir, loss_log)
+            images = render(env, n_steps=args.steps, interval=args.steps // 50)
+            make_gif_from_numpy(images, log_dir, f"epoch{epoch}")
 
 
 if __name__ == "__main__":
@@ -160,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp-name", "-n", type=str, default="pour_vel")
     parser.add_argument("--config", type=str, default="config/demo_pour_vel_config.py")
     parser.add_argument("--render-interval", type=int, default=5)
-    parser.add_argument("--epochs", type=int, default=40)
+    parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--steps", type=int, default=2000)
     args = parser.parse_args()
     main(args)

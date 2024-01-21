@@ -4,8 +4,6 @@ import torch
 import time
 
 from softmac.engine.mpm_simulator import MPMSimulator
-from softmac.engine.rigid_simulator import RigidSimulator
-from softmac.engine.rigid_simulator_vel import RigidSimulatorVelocityControl
 from softmac.engine.primitive import Primitives
 from softmac.engine.renderer import PyRenderer
 from softmac.engine.shapes import Shapes
@@ -40,8 +38,10 @@ class TaichiEnv:
         self.simulator = MPMSimulator(cfg.SIMULATOR, self.primitives, self.env_dt, rigid_velocity_control=self.rigid_velocity_control)
         self.substeps = self.simulator.substeps
         if self.rigid_velocity_control:
+            from softmac.engine.rigid_simulator_vel import RigidSimulatorVelocityControl
             self.rigid_simulator = RigidSimulatorVelocityControl(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
         else:
+            from softmac.engine.rigid_simulator import RigidSimulator
             self.rigid_simulator = RigidSimulator(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
         self.renderer = PyRenderer(cfg.RENDERER, self.primitives)
 
