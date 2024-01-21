@@ -58,7 +58,7 @@ python3 demo_hit.py
 ![Make taco gif](media/hit_saved_merged.gif)
 
 ## Update
-[2023.1] Add support for velocity control and an example `softmac/demo_pour_vel.py`. You can activate this mode by setting `rigid_velocity_control=True` in the configuration file.
+[2024.1] Add support for velocity control and an example `softmac/demo_pour_vel.py`. You can activate this mode by setting `rigid_velocity_control=True` in the configuration file.
 
 
 ## Note
