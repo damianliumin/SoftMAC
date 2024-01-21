@@ -147,7 +147,7 @@ class PyRenderer:
             scene.add(mesh)
         scene.add(particle)
 
-        # scene.add(self.floor)
+        scene.add(self.floor)
         if self.target is not None:
             scene.add(self.target)
         scene.add(self.light, pose=self.light_pose)

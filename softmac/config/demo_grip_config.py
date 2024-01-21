@@ -18,7 +18,6 @@ _C.SIMULATOR.quality = 1  # control the number of particles and size of the grid
 _C.SIMULATOR.yield_stress = 30.
 _C.SIMULATOR.dtype = "float64"
 _C.SIMULATOR.max_steps = 2048
-_C.SIMULATOR.n_particles = 0
 _C.SIMULATOR.E = 3e3
 _C.SIMULATOR.nu = 0.2  # Young's modulus and Poisson's ratio
 _C.SIMULATOR.ground_friction = 20.

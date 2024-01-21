@@ -6,6 +6,7 @@ _C = CN()
 
 cfg = _C
 _C.control_mode="rigid"
+_C.rigid_velocity_control=True
 _C.env_dt = 1e-3
 gravity = (0., -9.8, 0.)
 
@@ -17,7 +18,7 @@ _C.SIMULATOR.dim = 3
 _C.SIMULATOR.quality = 1  # control the number of particles and size of the grids
 _C.SIMULATOR.yield_stress = 50.
 _C.SIMULATOR.dtype = "float64"
-_C.SIMULATOR.max_steps = 4096
+_C.SIMULATOR.max_steps = 2048
 _C.SIMULATOR.E = 22.
 _C.SIMULATOR.nu = 0.2  # Young's modulus and Poisson's ratio
 _C.SIMULATOR.ground_friction = 0.
@@ -83,7 +84,7 @@ RENDERER.camera_rot = (-0.2, 0.0)
 _C.ENV = ENV = CN()
 ENV.loss_type = "PourLoss"
 loss = ENV.loss = CN()
-loss.weight = (1., 1e4, 1.)  # chamfer, pose, velocity
+loss.weight = (1e-4, 1.0, 1e-4)  # chamfer, pose, velocity
 loss.target_path = './envs/pour/pour_mpm_target_position_corotated.npy'
 ENV.n_observed_particles = 200
 

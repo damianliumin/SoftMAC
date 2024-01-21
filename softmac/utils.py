@@ -15,11 +15,18 @@ def make_movie(log_dir, name=None):
     filenames = os.listdir(log_dir / "figs")
     filenames.sort()
     gif_name = "movie.gif" if name is None else name + ".gif"
-    with imageio.get_writer(log_dir / gif_name, mode='I') as writer:
+    with imageio.get_writer(log_dir / gif_name, mode='I', loop=0) as writer:
         for filename in filenames:
             image = imageio.imread(log_dir / "figs" / filename)
             writer.append_data(image)
     os.system(f"rm -r {str(log_dir / 'figs')}")
+
+def make_gif_from_numpy(images, logdir, name=None):
+    import imageio.v2 as imageio
+    gif_name = "movie.gif" if name is None else name + ".gif"
+    with imageio.get_writer(logdir / gif_name, mode='I', loop=0) as writer:
+        for image in images:
+            writer.append_data(image)
 
 def render(env, log_dir, epoch=0, action=None, n_steps=100, interval=10):
     print("Rendering...")

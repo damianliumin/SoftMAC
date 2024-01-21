@@ -13,13 +13,13 @@ class RigidSimulator:
         self.gravity = cfg.gravity
         self.dt = env_dt
 
-        # Adamas World
+        # Jade World
         world: nimble.simulation.World = nimble.simulation.World()
         world.setGravity(self.gravity)
         world.setTimeStep(self.dt)
         self.world = world
 
-        # Build Adamas Environment
+        # Build Jade Environment
         self.skeletons = []
         self.skeleton_offset = [0, ]                                    # offset in state vector
         for urdf_cfg in self.primitives.urdfs:
@@ -130,7 +130,7 @@ class RigidSimulator:
                 action_local[i * 6 + 3 : i * 6 + 6] = rot @ action[i * 6 + 3 : i * 6 + 6]
                 self.jacob_action[-1].append(rot)
 
-        # adamas step
+        # Jade step
         new_state = nimble.timestep(self.world, self.states[-1], action_local)
         self.states.append(new_state)
 
@@ -144,7 +144,7 @@ class RigidSimulator:
 
     def step_grad(self, s, action=None):
         if self.n_primitive == 0:
-            return []
+            return None, []
 
         ext_grad = self.get_ext_state_grad(s+1)
         self.state_grad += ext_grad * self.ext_grad_scale           # TODO: mpm2rigid suffers from gradient explosion

@@ -1,6 +1,6 @@
 import taichi as ti
 import numpy as np
-from softmac.engine.primitive.primitive_utils import length, qrot, inv_trans
+from softmac.engine.primitive.primitive_utils import length, qrot, inv_trans, qmul, w2quat
 from softmac.config.utils import make_cls_config
 from yacs.config import CfgNode as CN
 
@@ -8,7 +8,7 @@ from yacs.config import CfgNode as CN
 class Primitive:
     # single primitive ..
     # state_dim = 7
-    def __init__(self, cfg=None, dim=3, max_timesteps=2048, dtype=ti.f64, substeps=20, **kwargs):
+    def __init__(self, cfg=None, dim=3, max_timesteps=2048, dtype=ti.f64, rigid_velocity_control=False, **kwargs):
         """
         The primitive has the following functions ...
         """
@@ -35,9 +35,12 @@ class Primitive:
                                                         self.rotation, self.rotation.grad, \
                                                         self.v, self.v.grad, self.w, self.w.grad)
 
-        self.substeps = substeps
         self.enable_external_force = self.cfg.enable_external_force
         self.ext_f = ti.Vector.field(6, dtype, shape=(), needs_grad=True)
+
+        self.rigid_velocity_control = rigid_velocity_control
+        if rigid_velocity_control:
+            self.action_buffer = ti.Vector.field(6, dtype, shape=(max_timesteps,), needs_grad=True)
 
     @ti.func
     def _sdf(self, f, grid_pos):
@@ -195,6 +198,9 @@ class Primitive:
         self.v[target] = self.v[source]
         self.w[target] = self.w[source]
 
+        if ti.static(self.rigid_velocity_control):
+            self.action_buffer[target] = self.action_buffer[source]
+
     @ti.kernel
     def get_state_kernel(self, f: ti.i32, controller: ti.types.ndarray()):
         for j in ti.static(range(3)):
@@ -265,6 +271,59 @@ class Primitive:
     def reset(self):
         self.clear_all_states()
         self.clear_ext_f()
+        if self.rigid_velocity_control:
+            self.clear_action_buffer()
+
+    # ------------------------------------------------------------------
+    # velocity control
+    # ------------------------------------------------------------------
+    @ti.kernel
+    def forward_kinematics(self, f: ti.i32, dt: ti.f64):
+        self.position[f+1] = self.position[f] + self.v[f] * dt
+        self.rotation[f+1] = qmul(w2quat(self.w[f] * dt, self.dtype), self.rotation[f])
+
+    @ti.kernel
+    def set_action_kernel(self, s: ti.i32, action: ti.types.ndarray()):
+        for i in ti.static(range(6)):
+            self.action_buffer[s][i] = action[i]
+    
+    @ti.ad.grad_replaced
+    def no_grad_set_action_kernel(self, s: ti.i32, action: ti.types.ndarray()):
+        self.set_action_kernel(s, action)
+
+    @ti.ad.grad_for(no_grad_set_action_kernel)
+    def no_grad_set_action_kernel_grad(self, s: ti.i32, action: ti.types.ndarray()):
+        return
+
+    @ti.kernel
+    def set_velocity_from_action_kernel(self, s: ti.i32, n: ti.i32):
+        for j in range(s * n, (s + 1) * n):
+            for k in ti.static(range(3)):
+                self.v[j][k] = self.action_buffer[s][k+3]
+            for k in ti.static(range(3)):
+                self.w[j][k] = self.action_buffer[s][k]
+        
+    @ti.kernel
+    def get_action_grad_kernel(self, s: ti.i32, grad: ti.types.ndarray()):
+        for i in ti.static(range(6)):
+            grad[i] = self.action_buffer.grad[s][i]
+
+    def set_action(self, s, n, action):
+        self.no_grad_set_action_kernel(s, action)
+        self.set_velocity_from_action_kernel(s, n)
+
+    def get_action_grad(self, s, n):
+        grad = np.zeros(6)
+        self.set_velocity_from_action_kernel.grad(s, n)
+        self.get_action_grad_kernel(s, grad)
+        return grad
+    
+    @ti.kernel
+    def clear_action_buffer(self):
+        for f in range(self.max_timesteps):
+            for j in ti.static(range(6)):
+                self.action_buffer[f][j] = 0.0
+                self.action_buffer.grad[f][j] = 0.0
 
     @classmethod
     def default_config(cls):
@@ -274,5 +333,3 @@ class Primitive:
         cfg.urdf_path = ''
 
         return cfg
-
-

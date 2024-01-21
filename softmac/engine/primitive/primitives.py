@@ -20,7 +20,7 @@ class Primitives:
             self.urdfs.append(i)
             mesh_paths, colors = self.load_info_from_urdf(i.urdf_path)
             for j, (mesh_path, color) in enumerate(zip(mesh_paths, colors)):
-                primitive = Mesh(mesh_path, color=color, cfg=i, max_timesteps=max_timesteps)
+                primitive = Mesh(mesh_path, color=color, cfg=i, max_timesteps=max_timesteps, rigid_velocity_control=rigid_velocity_control)
                 self.primitives.append(primitive)
 
     def load_info_from_urdf(self, urdf_path):

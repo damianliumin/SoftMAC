@@ -5,13 +5,14 @@ import time
 
 from softmac.engine.mpm_simulator import MPMSimulator
 from softmac.engine.rigid_simulator import RigidSimulator
+from softmac.engine.rigid_simulator_vel import RigidSimulatorVelocityControl
 from softmac.engine.primitive import Primitives
 from softmac.engine.renderer import PyRenderer
 from softmac.engine.shapes import Shapes
 from softmac.engine.losses import *
 
 # ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=12, device_memory_fraction=0.9)
-ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=8)
+ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=9)
 @ti.data_oriented
 class TaichiEnv:
     def __init__(self, cfg):
@@ -30,15 +31,18 @@ class TaichiEnv:
         self.rigid_velocity_control = cfg.rigid_velocity_control        # default: False
 
         # set primitives and shapes
-        self.primitives = Primitives(cfg.PRIMITIVES, max_timesteps=cfg.SIMULATOR.max_steps)
+        self.primitives = Primitives(cfg.PRIMITIVES, max_timesteps=cfg.SIMULATOR.max_steps, rigid_velocity_control=self.rigid_velocity_control)
         self.shapes = Shapes(cfg.SHAPES)
         self.init_particles, self.particle_colors = self.shapes.get()
         self.n_particles = cfg.SIMULATOR.n_particles = len(self.init_particles)
 
         # initialize simulators and renderer
-        self.simulator = MPMSimulator(cfg.SIMULATOR, self.primitives, self.env_dt)
+        self.simulator = MPMSimulator(cfg.SIMULATOR, self.primitives, self.env_dt, rigid_velocity_control=self.rigid_velocity_control)
         self.substeps = self.simulator.substeps
-        self.rigid_simulator = RigidSimulator(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
+        if self.rigid_velocity_control:
+            self.rigid_simulator = RigidSimulatorVelocityControl(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
+        else:
+            self.rigid_simulator = RigidSimulator(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
         self.renderer = PyRenderer(cfg.RENDERER, self.primitives)
 
         # set loss if applicable
@@ -102,7 +106,7 @@ class TaichiEnv:
         if self._is_copy:
             self.simulator.copyframe(self.simulator.cur, 0) # copy to the first frame for rendering
             self.simulator.cur = 0
-            if self.rigid_simulator.n_primitive > 0:
+            if self.rigid_simulator.n_primitive > 0 and not self.rigid_velocity_control:
                 self.rigid_simulator.states = [self.rigid_simulator.states[-1], ]
                 self.rigid_simulator.jacob_ds_df = []
                 self.rigid_simulator.jacob_ds_ds = []
@@ -133,14 +137,16 @@ class TaichiEnv:
         return action_grad
 
     def backward(self):
-        self.rigid_simulator.state_grad = torch.zeros(self.rigid_simulator.state_dim)
+        if not self.rigid_velocity_control:
+            self.rigid_simulator.state_grad = torch.zeros(self.rigid_simulator.state_dim)
         total_steps = self.simulator.cur // self.substeps
         action_grad = []
         for s in range(total_steps - 1, -1, -1):
             grad = self.step_grad(self.action_list[s])
             action_grad = [grad] + action_grad
-
-        self.rigid_simulator.state_grad += self.rigid_simulator.get_ext_state_grad(0)
+        
+        if not self.rigid_velocity_control:
+            self.rigid_simulator.state_grad += self.rigid_simulator.get_ext_state_grad(0)
         action_grad = torch.vstack(action_grad)
         return action_grad
 
