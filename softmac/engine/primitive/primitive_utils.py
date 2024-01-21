@@ -28,16 +28,15 @@ def qmul(q, r):
 
 @ti.func
 def w2quat(axis_angle, dtype):
-    w = axis_angle.norm()
+    w = axis_angle.norm(1e-12)
     out = ti.Vector.zero(dt=dtype, n=4)
-    out[0] = 1.
-    if w > 1e-9:
-        v = (axis_angle/w) * ti.sin(w/2)
-        #return ti.Vector([ti.cos(w/2), v * sin(w/2)])
-        out[0] = ti.cos(w/2)
-        out[1] = v[0]
-        out[2] = v[1]
-        out[3] = v[2]
+
+    v = (axis_angle / w) * ti.sin(w / 2)
+    out[0] = ti.cos(w / 2)
+    out[1] = v[0]
+    out[2] = v[1]
+    out[3] = v[2]
+
     return out
 
 @ti.func

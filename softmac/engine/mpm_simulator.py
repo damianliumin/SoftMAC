@@ -14,7 +14,7 @@ CONTACT_MIXED       = 2
 
 @ti.data_oriented
 class MPMSimulator:
-    def __init__(self, cfg, primitives=(), env_dt=2e-3):
+    def __init__(self, cfg, primitives=(), env_dt=2e-3, rigid_velocity_control=False):
         dim = self.dim = cfg.dim
         assert cfg.dtype == 'float64'
         dtype = self.dtype = ti.f64 if cfg.dtype == 'float64' else ti.f32
@@ -68,6 +68,7 @@ class MPMSimulator:
         self.gravity = ti.Vector.field(dim, dtype=dtype, shape=()) # gravity ...
         self.primitives = primitives
         self.primitives_contact = [True for _ in range(self.n_primitive)]
+        self.rigid_velocity_control = rigid_velocity_control
 
         # control
         self.n_control = n_control = cfg.n_controllers
@@ -324,6 +325,11 @@ class MPMSimulator:
         if self.material_model == MODEL_COROTATED:
             self.svd()
         self.p2g(s)
+
+        if self.rigid_velocity_control:
+            for i in range(self.n_primitive):
+                self.primitives[i].forward_kinematics(s, self.dt)
+
         if self.collision_type == CONTACT_MIXED:
             self.grid_op_mixed(s)
         else:
@@ -333,8 +339,9 @@ class MPMSimulator:
     def substep_grad(self, s, action=None, ext_f_grad=None):
         if action is not None:
             self.set_action(action)
-        for i in range(self.n_primitive):
-            if ext_f_grad is not None: self.primitives[i].set_ext_f_grad(ext_f_grad[i])
+        if ext_f_grad is not None: 
+            for i in range(self.n_primitive):
+                self.primitives[i].set_ext_f_grad(ext_f_grad[i])
 
         # clear
         self.clear_grid()
@@ -356,6 +363,11 @@ class MPMSimulator:
             self.grid_op_mixed_grad(s)
         else:
             self.grid_op.grad(s)
+
+        if self.rigid_velocity_control:
+            for i in range(self.n_primitive-1, -1, -1):
+                self.primitives[i].forward_kinematics.grad(s, self.dt)
+
         self.p2g.grad(s)
         if self.material_model == MODEL_COROTATED:
             self.svd_grad()

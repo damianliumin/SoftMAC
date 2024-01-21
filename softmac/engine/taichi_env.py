@@ -4,43 +4,59 @@ import torch
 import time
 
 from softmac.engine.mpm_simulator import MPMSimulator
-from softmac.engine.rigid_simulator import RigidSimulator
 from softmac.engine.primitive import Primitives
 from softmac.engine.renderer import PyRenderer
 from softmac.engine.shapes import Shapes
 from softmac.engine.losses import *
 
 # ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=12, device_memory_fraction=0.9)
-ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=8)
+ti.init(arch=ti.gpu, debug=False, fast_math=True, device_memory_GB=9)
 @ti.data_oriented
 class TaichiEnv:
-    def __init__(self, cfg, use_loss=True):
+    def __init__(self, cfg):
         """
         A taichi env builds scene according the configuration and the set of manipulators
         """
         self.cfg = cfg.ENV
-        self.primitives = Primitives(cfg.PRIMITIVES, max_timesteps=cfg.SIMULATOR.max_steps)
+        cfg.defrost()
+        self.env_dt = cfg.env_dt
 
+        # set control mode
+        self.control_mode = cfg.control_mode    # "mpm", "rigid"
+        assert self.control_mode in ("mpm", "rigid")
+        # If `rigid_velocity_control` is True, rigid bodies are controlled by velocity and Jade is not used.
+        # Otherwise, they are controlled by force and simulated with Jade.
+        self.rigid_velocity_control = cfg.rigid_velocity_control        # default: False
+
+        # set primitives and shapes
+        self.primitives = Primitives(cfg.PRIMITIVES, max_timesteps=cfg.SIMULATOR.max_steps, rigid_velocity_control=self.rigid_velocity_control)
         self.shapes = Shapes(cfg.SHAPES)
         self.init_particles, self.particle_colors = self.shapes.get()
-
-        cfg.SIMULATOR.defrost()
-        self.env_dt = cfg.env_dt
         self.n_particles = cfg.SIMULATOR.n_particles = len(self.init_particles)
-        self.simulator = MPMSimulator(cfg.SIMULATOR, self.primitives, self.env_dt)
+
+        # initialize simulators and renderer
+        self.simulator = MPMSimulator(cfg.SIMULATOR, self.primitives, self.env_dt, rigid_velocity_control=self.rigid_velocity_control)
         self.substeps = self.simulator.substeps
-        self.rigid_simulator = RigidSimulator(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
+        if self.rigid_velocity_control:
+            from softmac.engine.rigid_simulator_vel import RigidSimulatorVelocityControl
+            self.rigid_simulator = RigidSimulatorVelocityControl(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
+        else:
+            from softmac.engine.rigid_simulator import RigidSimulator
+            self.rigid_simulator = RigidSimulator(cfg.RIGID, self.primitives, self.substeps, self.env_dt)
         self.renderer = PyRenderer(cfg.RENDERER, self.primitives)
 
-        if use_loss:
+        # set loss if applicable
+        self.use_loss = cfg.ENV.loss_type != ""
+        if self.use_loss:
             self.loss = eval(cfg.ENV.loss_type)(cfg.ENV.loss, self.simulator)
         else:
             self.loss = None
+
+        # When `_is_copy` is True, old states are overwritten by new states.
+        # Recommend setting `_is_copy` to True when gradients are not needed.
         self._is_copy = False
 
-        self.control_mode = cfg.control_mode    # "mpm", "rigid"
-
-        self.action_list = []
+        self.initialize()
 
     def set_copy(self, is_copy: bool):
         self._is_copy= is_copy
@@ -49,17 +65,20 @@ class TaichiEnv:
         # initialize all taichi variable according to configurations..
         self.primitives.initialize()
         self.simulator.initialize()
-        self.renderer.initialize()
         self.rigid_simulator.initialize()
+        self.renderer.initialize()
         if self.loss:
             self.loss.initialize()
-            # self.renderer.set_target_density(self.loss.target_density.to_numpy()/self.simulator.p_mass)
 
-        # call set_state instead of reset..
+        self.reset()
+
+    def reset(self):
+        self.primitives.reset()
         self.simulator.reset(self.init_particles)
+        self.rigid_simulator.reset()
+        self.renderer.reset()
         if self.loss:
-            self.loss.clear()
-        
+            self.loss.reset()
         self.action_list = []
 
     def render(self, f=None):
@@ -87,7 +106,7 @@ class TaichiEnv:
         if self._is_copy:
             self.simulator.copyframe(self.simulator.cur, 0) # copy to the first frame for rendering
             self.simulator.cur = 0
-            if self.rigid_simulator.n_primitive > 0:
+            if self.rigid_simulator.n_primitive > 0 and not self.rigid_velocity_control:
                 self.rigid_simulator.states = [self.rigid_simulator.states[-1], ]
                 self.rigid_simulator.jacob_ds_df = []
                 self.rigid_simulator.jacob_ds_ds = []
@@ -117,67 +136,19 @@ class TaichiEnv:
         action_grad = mpm_action_grad if self.control_mode == "mpm" else rigid_action_grad
         return action_grad
 
-    forward = step
     def backward(self):
-        self.rigid_simulator.state_grad = torch.zeros(self.rigid_simulator.state_dim)
+        if not self.rigid_velocity_control:
+            self.rigid_simulator.state_grad = torch.zeros(self.rigid_simulator.state_dim)
         total_steps = self.simulator.cur // self.substeps
         action_grad = []
         for s in range(total_steps - 1, -1, -1):
             grad = self.step_grad(self.action_list[s])
             action_grad = [grad] + action_grad
-
-        self.rigid_simulator.state_grad += self.rigid_simulator.get_ext_state_grad(0)
+        
+        if not self.rigid_velocity_control:
+            self.rigid_simulator.state_grad += self.rigid_simulator.get_ext_state_grad(0)
         action_grad = torch.vstack(action_grad)
         return action_grad
-
-    def adjust_action_with_ext_force(self, actions):
-        """ 
-        The actions are obtained from optimization without external force.
-        Use this function to adjust actions with external force.
-        """
-        assert self.control_mode == "rigid"
-        assert self._is_copy == False
-
-        def qrot(rot, v):
-            # rot: vec4, v: vec3
-            qvec = rot[1:]
-            uv = qvec.cross(v)
-            uuv = qvec.cross(uv)
-            return v + 2 * (rot[0] * uv + uuv)
-
-        def transform_force(exp, force, torque):
-            q = self.rigid_simulator.exp2quat(exp)
-            q[1:] *= -1.
-            force_local = qrot(q, force)
-            torque_local = qrot(q, torque)
-            return force_local, torque_local
-
-        num_steps = actions.shape[0]
-
-        action_rec = []
-        for t in range(num_steps):
-            start = self.simulator.cur
-            self.simulator.cur = start + self.substeps
-            for s in range(start, self.simulator.cur):
-                self.simulator.substep(s)
-
-            for i in range(self.rigid_simulator.n_primitive):
-                ext_f = torch.FloatTensor(self.primitives[i].ext_f.to_numpy()) / self.substeps
-                if self.primitives[i].enable_external_force:
-                    force, torque = ext_f[:3], ext_f[3:]
-                    force += self.rigid_simulator.skeletons[i].getMass() * torch.Tensor(self.rigid_simulator.gravity)
-
-                    actions[t, i * 6 : i * 6 + 3] -= torque
-                    actions[t, i * 6 + 3 : i * 6 + 6] -= force
-
-            self.rigid_simulator.step(start // self.substeps, actions[t])
-            action_rec.append(actions[t])
-
-        return torch.vstack(action_rec)
-
-    def set_control_mode(self, mode):
-        assert mode in ("mpm", "rigid")
-        self.control_mode = mode
 
     def compute_loss(self, f=None, **kwargs):
         assert self.loss is not None
@@ -189,24 +160,3 @@ class TaichiEnv:
                 return self.loss.compute_loss(self.simulator.cur, **kwargs)
         else:
             return self.loss.compute_loss(f, **kwargs)
-
-    @property
-    def cur(self):
-        return self.simulator.cur
-
-    # def get_state(self):
-    #     assert self.simulator.cur == 0
-    #     return {
-    #         'state': self.simulator.get_state(0),
-    #         'softness': self.primitives.get_softness(),
-    #         'is_copy': self._is_copy
-    #     }
-
-    # def set_state(self, state, softness, is_copy):
-    #     self.simulator.cur = 0
-    #     self.simulator.set_state(0, state)
-    #     self.primitives.set_softness(softness)
-    #     self._is_copy = is_copy
-    #     if self.loss:
-    #         self.loss.reset()
-    #         self.loss.clear()

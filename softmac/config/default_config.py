@@ -5,6 +5,7 @@ _C = CN()
 
 cfg = _C
 _C.control_mode="rigid"
+_C.rigid_velocity_control=False
 _C.env_dt = 2e-3
 
 # ---------------------------------------------------------------------------- #
@@ -78,7 +79,7 @@ RENDERER.camera_rot = (-0.2, 0)
 # ENV
 # ---------------------------------------------------------------------------- #
 _C.ENV = ENV = CN()
-ENV.loss_type = "Loss"
+ENV.loss_type = ""
 
 loss = ENV.loss = CN()
 loss.soft_contact = False

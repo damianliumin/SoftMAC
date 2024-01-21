@@ -13,14 +13,14 @@ def length(x):
     return ti.sqrt(x.dot(x) + 1e-14)
 
 class Primitives:
-    def __init__(self, cfgs, max_timesteps=2048):
+    def __init__(self, cfgs, max_timesteps=2048, rigid_velocity_control=False):
         self.primitives = []
         self.urdfs = []
         for i in cfgs:
             self.urdfs.append(i)
             mesh_paths, colors = self.load_info_from_urdf(i.urdf_path)
             for j, (mesh_path, color) in enumerate(zip(mesh_paths, colors)):
-                primitive = Mesh(mesh_path, color=color, cfg=i, max_timesteps=max_timesteps)
+                primitive = Mesh(mesh_path, color=color, cfg=i, max_timesteps=max_timesteps, rigid_velocity_control=rigid_velocity_control)
                 self.primitives.append(primitive)
 
     def load_info_from_urdf(self, urdf_path):
@@ -53,6 +53,8 @@ class Primitives:
         return len(self.primitives)
 
     def initialize(self):
-        for i in self.primitives:
-            i.initialize()
         self.set_softness(666.)
+
+    def reset(self):
+        for i in self.primitives:
+            i.reset()

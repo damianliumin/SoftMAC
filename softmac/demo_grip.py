@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
 from softmac.engine.taichi_env import TaichiEnv
-from softmac.utils import make_movie, render, prepare
+from softmac.utils import make_gif_from_numpy, render, prepare
 
 np.set_printoptions(precision=4)
 
@@ -64,13 +64,13 @@ class Controller:
         self.epoch += 1
 
 def gen_init_state(args, env, log_dir, actions):
-    env.initialize()
+    env.reset()
     env.set_copy(False)
     for step in range(args.steps):
         action = actions[step]
-        env.forward(action)
-    render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
-    make_movie(log_dir)
+        env.step(action)
+    images = render(env, n_steps=args.steps, interval=args.steps // 50)
+    make_gif_from_numpy(images, log_dir)
 
     state = env.simulator.get_state(env.simulator.cur)
     print(state.shape)
@@ -88,27 +88,23 @@ def get_init_actions(args, env, choice=0):
         assert False
     return torch.FloatTensor(actions)
 
-def plot_actions(log_dir, actions, actions_grad, epoch):
-    actions = actions.detach().numpy()
-    plt.figure()
-
-    plt.subplot(211)
-    plt.title("Actor 1")
-    for i, axis in zip(range(2), ['1', '2']):
-        plt.plot(actions[:, i], label=axis)
-    plt.legend(loc='upper right')
-
-    plt.subplot(212)
-    plt.title("Grad for Actor 1")
-    for i, axis in zip(range(2), ['1', '2']):
-        plt.plot(actions_grad[:, i], label=axis)
-    plt.legend(loc='upper right')
-
+def plot_loss_curve(log_dir, loss_log):
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fontsize = 14
+    plt.plot(loss_log, color="#c11221")
+    plt.xlabel("Epochs", fontsize=fontsize)
+    plt.xticks([0, 2, 4, 6, 8, 10, 12, 14])
+    formatter = ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-1, 1))
+    ax.yaxis.set_major_formatter(formatter)
+    plt.ylabel("Loss", fontsize=fontsize)
     plt.tight_layout()
-    plt.savefig(log_dir / "actions" / f"actions_{epoch}.png", dpi=300)
+    plt.savefig(log_dir / "loss_curve.png", dpi=500)
     plt.close()
 
-    torch.save(actions, log_dir / "ckpt" / f"actions_{epoch}.pt")
+    losses = np.array(loss_log)
+    np.save(log_dir / "losses.npy", losses)
 
 def main(args):
     # Path and Configurations
@@ -118,13 +114,11 @@ def main(args):
 
     # Build Environment
     env = TaichiEnv(cfg)
-    env.set_control_mode("rigid")
     env.simulator.primitives_contact = [False, True, True]
-    env.initialize()
-    for i in range(10):
-        # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
-        env.forward()
-    env.initialize()
+    # for i in range(10):
+    #     # Adamas setExtForce has bug. Result of the first epoch differs from later epochs.
+    #     env.step()
+    # env.reset()
 
     # Prepare Controller
     actions = get_init_actions(args, env, choice=2)
@@ -139,14 +133,14 @@ def main(args):
         # preparation
         tik = time.time()
         ti.ad.clear_all_gradients()
-        env.initialize()
+        env.reset()
         prepare_time = time.time() - tik
 
         # forward
         tik = time.time()
         actions = controller.get_actions()
         for i in range(args.steps):
-            env.forward(actions[i])
+            env.step(actions[i])
         forward_time = time.time() - tik
 
         # loss
@@ -181,28 +175,11 @@ def main(args):
 
         loss_log.append(env.loss.loss.to_numpy())
         
-        plot_actions(log_dir, actions, actions_grad, epoch)
-
         if (epoch + 1) % args.render_interval == 0 or epoch == 0:
-            render(env, log_dir, 0, n_steps=args.steps, interval=args.steps // 50)
-            make_movie(log_dir, f"epoch{epoch}")
+            images = render(env, n_steps=args.steps, interval=args.steps // 50)
+            make_gif_from_numpy(images, log_dir, f"epoch{epoch}")
 
-    fig, ax = plt.subplots(figsize=(4, 3))
-    fontsize = 14
-    plt.plot(loss_log, color="#c11221")
-    plt.xlabel("Epochs", fontsize=fontsize)
-    plt.xticks([0, 2, 4, 6, 8, 10, 12, 14])
-    formatter = ScalarFormatter(useMathText=True)
-    formatter.set_scientific(True)
-    formatter.set_powerlimits((-1, 1))
-    ax.yaxis.set_major_formatter(formatter)
-    plt.ylabel("Loss", fontsize=fontsize)
-    plt.tight_layout()
-    plt.savefig(log_dir / "loss_curve.png", dpi=500)
-    plt.close()
-
-    losses = np.array(loss_log)
-    np.save(log_dir / "losses.npy", losses)
+    plot_loss_curve(log_dir, loss_log)
 
 
 if __name__ == "__main__":
