@@ -75,8 +75,8 @@ class PourLoss:
         """ reference: e (0.0074 0.0077 2.0392), x (0.6122 0.4144 0.5) """
         self.pose_loss[None] += 10. * (self.rigid_control.position[f][1] - 0.4) ** 2
 
-        self.pose_loss[None] += 1.0 * ti.min(0., ti.abs(self.rigid_control.rotation[f][0]) - 0.5) ** 2  # be careful, rotation direction and angle
-        self.pose_loss[None] += 1.0 * ti.max(0., ti.abs(self.rigid_control.rotation[f][0]) - 0.9) ** 2
+        # self.pose_loss[None] += 1.0 * ti.min(0., ti.abs(self.rigid_control.rotation[f][0]) - 0.5) ** 2  # be careful, rotation direction and angle
+        # self.pose_loss[None] += 1.0 * ti.max(0., ti.abs(self.rigid_control.rotation[f][0]) - 0.9) ** 2
 
     # -----------------------------------------------------------
     # compute velocity loss
