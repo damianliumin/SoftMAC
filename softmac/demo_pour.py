@@ -211,7 +211,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp-name", "-n", type=str, default="pour")
     parser.add_argument("--config", type=str, default="config/demo_pour_config.py")
     parser.add_argument("--render-interval", type=int, default=5)
-    parser.add_argument("--epochs", type=int, default=40)
+    parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--steps", type=int, default=3000)
     args = parser.parse_args()
     main(args)
