@@ -1,5 +1,5 @@
 # SoftMAC
-Implemetation for our paper "SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes" (in submission).
+Implemetation for our paper "SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes" (accepted to IROS 2024).
 
 [[website]](https://sites.google.com/view/softmac) [[arXiv]](https://arxiv.org/abs/2312.03297)
 
