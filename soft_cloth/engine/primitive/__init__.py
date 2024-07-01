@@ -1,1 +1,0 @@
-from .primitive_cloth import Primitive_Cloth
