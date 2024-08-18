@@ -67,10 +67,10 @@ Feel free to contact me at minliu2@cs.cmu.edu or create a Github issue if you ha
 ## Citation
 If you find our work useful, please consider citing:
 ```bash
-@article{liu2023softmac,
+@inproceedings{liu2023softmac,
   title={SoftMAC: Differentiable Soft Body Simulation with Forecast-based Contact Model and Two-way Coupling with Articulated Rigid Bodies and Clothes},
-  author={Liu, Min and Yang, Gang and Luo, Siyuan and Yu, Chen and Shao, Lin},
-  journal={arXiv preprint arXiv:2312.03297},
-  year={2023}
+  author={Liu, Min and Yang, Gang and Luo, Siyuan and Shao, Lin},
+  booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) },
+  year={2024},
 }
 ```
